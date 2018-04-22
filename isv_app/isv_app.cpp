@@ -142,35 +142,54 @@ uint8_t get_report(uint64_t enclave_id, uint8_t* spid, uint8_t* req_pubkey, repo
 	sgx_epid_group_id_t p_gid;                                                
 
 	ret = sgx_init_quote(&p_target_info, &p_gid);                             
+	
+	//TODO: add error number
+	if(ret != 0) return ret;
 
 	uint32_t p_quote_size;
 	ret = sgx_calc_quote_size(NULL, 0, &p_quote_size);
 
+	if(ret != 0) return ret;
+
+	report->quote_size = p_quote_size;
+
 	sgx_report_t sgx_report;
-	uint8_t req_pubkey_sig[512];
 
-	ret = tmac_get_report((sgx_enclave_id_t)enclave_id, &status, &p_target_info, req_pubkey, &sgx_report, req_pubkey_sig);
 
+	ret = tmac_get_report((sgx_enclave_id_t)enclave_id, &status, &p_target_info, req_pubkey, &sgx_report, report->req_pubkey_sig, report->pubkey);
+
+	//==================================get quote============================================
 	sgx_spid_t sgx_spid; 
 	sgx_quote_t *quote = (sgx_quote_t*)malloc(p_quote_size);
 	
+	printf("quote size: %d \n", p_quote_size);
 	for(int i = 0; i < 16; ++i)
 		sgx_spid.id[i] = spid[i];
 
 	ret = sgx_get_quote(&sgx_report, SGX_UNLINKABLE_SIGNATURE, &sgx_spid, NULL, NULL, 
 			0, NULL, quote, p_quote_size);
-	printf("[tmac] sgx_get_quote return %d\n", ret);
+	
 
-	if(ret == 0)
-		printf("[tmac] Success: get quote and pubkey of enclave"
-				" [execute \'ls ./provider/data/\']\n");
+	if(ret == 0){
+		strncpy((char*)report->quote, (const char*)quote, p_quote_size);
 
-	FILE *fp;
-	fp = fopen("./provider/data/quote.bin", "w+b");
-	fwrite((void*)quote, p_quote_size, 1, fp);
-	fclose(fp);
+		FILE *fp;
+		fp = fopen("./provider/data/quote.bin", "w+b");
+		fwrite((void*)quote, p_quote_size, 1, fp);
+		fclose(fp);
 
-	return 0;
+		FILE *fp1;
+		fp1 = fopen("./provider/data/sig", "w+b");
+		fwrite((void*)report->req_pubkey_sig, 512, 1, fp1);
+		fclose(fp1);
+
+		return 0;
+	}
+		
+	return 1;
+	
+
+	
 
 
 }

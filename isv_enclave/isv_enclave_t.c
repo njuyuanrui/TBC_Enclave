@@ -23,6 +23,7 @@ typedef struct ms_tmac_get_report_t {
 	uint8_t* ms_req_pubkey;
 	sgx_report_t* ms_report;
 	uint8_t* ms_req_pubkey_sig;
+	uint8_t* ms_enc_pubkey;
 } ms_tmac_get_report_t;
 
 typedef struct ms_sgx_ra_get_ga_t {
@@ -127,7 +128,7 @@ static sgx_status_t SGX_CDECL sgx_tmac_get_report(void* pms)
 	size_t _len_target_info = sizeof(*_tmp_target_info);
 	sgx_target_info_t* _in_target_info = NULL;
 	uint8_t* _tmp_req_pubkey = ms->ms_req_pubkey;
-	size_t _len_req_pubkey = sizeof(*_tmp_req_pubkey);
+	size_t _len_req_pubkey = 775;
 	uint8_t* _in_req_pubkey = NULL;
 	sgx_report_t* _tmp_report = ms->ms_report;
 	size_t _len_report = sizeof(*_tmp_report);
@@ -135,11 +136,15 @@ static sgx_status_t SGX_CDECL sgx_tmac_get_report(void* pms)
 	uint8_t* _tmp_req_pubkey_sig = ms->ms_req_pubkey_sig;
 	size_t _len_req_pubkey_sig = 512;
 	uint8_t* _in_req_pubkey_sig = NULL;
+	uint8_t* _tmp_enc_pubkey = ms->ms_enc_pubkey;
+	size_t _len_enc_pubkey = 775;
+	uint8_t* _in_enc_pubkey = NULL;
 
 	CHECK_UNIQUE_POINTER(_tmp_target_info, _len_target_info);
 	CHECK_UNIQUE_POINTER(_tmp_req_pubkey, _len_req_pubkey);
 	CHECK_UNIQUE_POINTER(_tmp_report, _len_report);
 	CHECK_UNIQUE_POINTER(_tmp_req_pubkey_sig, _len_req_pubkey_sig);
+	CHECK_UNIQUE_POINTER(_tmp_enc_pubkey, _len_enc_pubkey);
 
 	if (_tmp_target_info != NULL && _len_target_info != 0) {
 		_in_target_info = (sgx_target_info_t*)malloc(_len_target_info);
@@ -175,7 +180,15 @@ static sgx_status_t SGX_CDECL sgx_tmac_get_report(void* pms)
 
 		memset((void*)_in_req_pubkey_sig, 0, _len_req_pubkey_sig);
 	}
-	ms->ms_retval = tmac_get_report(_in_target_info, _in_req_pubkey, _in_report, _in_req_pubkey_sig);
+	if (_tmp_enc_pubkey != NULL && _len_enc_pubkey != 0) {
+		if ((_in_enc_pubkey = (uint8_t*)malloc(_len_enc_pubkey)) == NULL) {
+			status = SGX_ERROR_OUT_OF_MEMORY;
+			goto err;
+		}
+
+		memset((void*)_in_enc_pubkey, 0, _len_enc_pubkey);
+	}
+	ms->ms_retval = tmac_get_report(_in_target_info, _in_req_pubkey, _in_report, _in_req_pubkey_sig, _in_enc_pubkey);
 err:
 	if (_in_target_info) free(_in_target_info);
 	if (_in_req_pubkey) free(_in_req_pubkey);
@@ -186,6 +199,10 @@ err:
 	if (_in_req_pubkey_sig) {
 		memcpy(_tmp_req_pubkey_sig, _in_req_pubkey_sig, _len_req_pubkey_sig);
 		free(_in_req_pubkey_sig);
+	}
+	if (_in_enc_pubkey) {
+		memcpy(_tmp_enc_pubkey, _in_enc_pubkey, _len_enc_pubkey);
+		free(_in_enc_pubkey);
 	}
 
 	return status;

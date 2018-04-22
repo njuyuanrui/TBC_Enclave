@@ -5,6 +5,7 @@
 
 typedef struct _report{
     uint8_t pubkey[775];
+    uint16_t quote_size;
     uint8_t quote[1200];
     uint8_t req_pubkey_sig[512];
 } report_t;

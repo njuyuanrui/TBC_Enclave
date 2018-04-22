@@ -36,8 +36,8 @@ enclave {
     include "sgx_trts.h"
 
     trusted {
-        public sgx_status_t tmac_get_report([in] sgx_target_info_t *target_info, [in] uint8_t *req_pubkey,
-                                            [out] sgx_report_t *report, [out,size=512] uint8_t *req_pubkey_sig);
+        public sgx_status_t tmac_get_report([in] sgx_target_info_t *target_info, [in,size=775] uint8_t *req_pubkey,
+                                            [out] sgx_report_t *report, [out,size=512] uint8_t *req_pubkey_sig, [out,size=775] uint8_t *enc_pubkey);
     };
 
 	untrusted {

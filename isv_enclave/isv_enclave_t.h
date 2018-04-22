@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 
-sgx_status_t tmac_get_report(sgx_target_info_t* target_info, uint8_t* req_pubkey, sgx_report_t* report, uint8_t* req_pubkey_sig);
+sgx_status_t tmac_get_report(sgx_target_info_t* target_info, uint8_t* req_pubkey, sgx_report_t* report, uint8_t* req_pubkey_sig, uint8_t* enc_pubkey);
 sgx_status_t sgx_ra_get_ga(sgx_ra_context_t context, sgx_ec256_public_t* g_a);
 sgx_status_t sgx_ra_proc_msg2_trusted(sgx_ra_context_t context, const sgx_ra_msg2_t* p_msg2, const sgx_target_info_t* p_qe_target, sgx_report_t* p_report, sgx_quote_nonce_t* p_nonce);
 sgx_status_t sgx_ra_get_msg3_trusted(sgx_ra_context_t context, uint32_t quote_size, sgx_report_t* qe_report, sgx_ra_msg3_t* p_msg3, uint32_t msg3_size);

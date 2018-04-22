@@ -9,6 +9,13 @@
 #include "WebService.h"
 #include "Check.h"
 
+#include <openssl/pem.h>
+#include <openssl/ssl.h>
+#include <openssl/rsa.h>
+#include <openssl/evp.h>
+#include <openssl/bio.h>
+#include <openssl/err.h>
+
 using std::cout;
 using std::endl;
 
@@ -62,3 +69,74 @@ bool verifyPubkey(unsigned char quote[])
 	}
 	return true;
 }
+
+
+
+RSA* createRSA(unsigned char *key, int isPublic)
+{
+    RSA *rsa= NULL;
+    BIO *keybio ;
+    keybio = BIO_new_mem_buf(key, -1);
+    if (keybio==NULL)
+    {
+        printf( "Failed to create key BIO");
+        return 0;
+    }
+    if(isPublic)
+    {
+        rsa = PEM_read_bio_RSAPublicKey(keybio, &rsa,NULL, NULL);
+    }
+    else
+    {
+        rsa = PEM_read_bio_RSAPrivateKey(keybio, &rsa,NULL, NULL);
+    }
+
+    return rsa;
+}
+
+
+bool verifyReqPubkey()
+{
+
+	unsigned char req_pubkey[775] = {1};
+	memset(req_pubkey, 1, 775);
+	unsigned char sig[512];
+	unsigned char pubkey[775];
+	FILE *fp;
+	fp = fopen("./data/sig", "rb");
+	if(fp)
+	{
+		int cnt = fread(sig, 1, 512, fp);
+	}
+	fclose(fp);
+
+	FILE *fp1;
+	fp1 = fopen("./data/pubkey.pem", "rb");
+	if(fp1)
+	{
+		int cnt = fread(pubkey, 1, 775, fp);
+	}
+	fclose(fp1);
+	
+	RSA *rsa = createRSA(pubkey,1);
+	
+	unsigned char req_pubkey_hash[32];
+	unsigned char plaintext[32];
+    RSA_public_decrypt(512,sig,plaintext,rsa,RSA_PKCS1_PADDING);
+
+	SHA256(req_pubkey, 775, req_pubkey_hash);
+
+	for(int i = 0 ; i < 32 ; ++i ){
+		printf("%x", req_pubkey_hash[i]);
+	}
+	printf("\n");
+
+	for(int i = 0 ; i < 32 ; ++i ){
+		printf("%x", plaintext[i]);
+	}
+	printf("\n");	
+
+	return 0;
+	
+}
+

@@ -7,6 +7,7 @@ typedef struct ms_tmac_get_report_t {
 	uint8_t* ms_req_pubkey;
 	sgx_report_t* ms_report;
 	uint8_t* ms_req_pubkey_sig;
+	uint8_t* ms_enc_pubkey;
 } ms_tmac_get_report_t;
 
 typedef struct ms_sgx_ra_get_ga_t {
@@ -209,7 +210,7 @@ static const struct {
 		(void*)isv_enclave_sgx_thread_set_multiple_untrusted_events_ocall,
 	}
 };
-sgx_status_t tmac_get_report(sgx_enclave_id_t eid, sgx_status_t* retval, sgx_target_info_t* target_info, uint8_t* req_pubkey, sgx_report_t* report, uint8_t* req_pubkey_sig)
+sgx_status_t tmac_get_report(sgx_enclave_id_t eid, sgx_status_t* retval, sgx_target_info_t* target_info, uint8_t* req_pubkey, sgx_report_t* report, uint8_t* req_pubkey_sig, uint8_t* enc_pubkey)
 {
 	sgx_status_t status;
 	ms_tmac_get_report_t ms;
@@ -217,6 +218,7 @@ sgx_status_t tmac_get_report(sgx_enclave_id_t eid, sgx_status_t* retval, sgx_tar
 	ms.ms_req_pubkey = req_pubkey;
 	ms.ms_report = report;
 	ms.ms_req_pubkey_sig = req_pubkey_sig;
+	ms.ms_enc_pubkey = enc_pubkey;
 	status = sgx_ecall(eid, 0, &ocall_table_isv_enclave, &ms);
 	if (status == SGX_SUCCESS && retval) *retval = ms.ms_retval;
 	return status;

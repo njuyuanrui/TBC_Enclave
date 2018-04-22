@@ -7,4 +7,5 @@ bool verifyEnclave(unsigned char quote[]);
 
 bool verifyPubkey(unsigned char quote[]);
 
+bool verifyReqPubkey();
 #endif

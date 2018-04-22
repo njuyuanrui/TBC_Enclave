@@ -39,7 +39,7 @@
 
 #include "sgx_utils.h"
 
-extern void rsa_key_gen(unsigned char pubkey_hash[], uint8_t* req_pubkey, uint8_t *req_pubkey_sig);
+extern void rsa_key_gen(unsigned char pubkey_hash[], uint8_t* req_pubkey, uint8_t *req_pubkey_sig, uint8_t *enc_pubkey);
 extern void printf(char *fmt, ...);
 #pragma message ("Default key derivation function is used.")
 
@@ -49,12 +49,13 @@ sgx_status_t tmac_get_report(
 	sgx_target_info_t *target_info,
 	uint8_t *req_pubkey,
 	sgx_report_t *report,
-	uint8_t *req_pubkey_sig)
+	uint8_t *req_pubkey_sig,
+	uint8_t *enc_pubkey)
 {
 
 	unsigned char pubkey_hash[32]; //SHA256
 
-	rsa_key_gen(pubkey_hash, req_pubkey, req_pubkey_sig);
+	rsa_key_gen(pubkey_hash, req_pubkey, req_pubkey_sig, enc_pubkey);
 
     sgx_status_t ret;
 

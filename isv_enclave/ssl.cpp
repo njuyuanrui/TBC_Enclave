@@ -90,7 +90,7 @@ struct evp_pkey_st {
 RSA *keypair = NULL;
 
 //pubkey_hash'size is 32 (sha256)
-void rsa_key_gen(unsigned char pubkey_hash[], uint8_t* req_pubkey, uint8_t *req_pubkey_sig)
+void rsa_key_gen(unsigned char pubkey_hash[], uint8_t* req_pubkey, uint8_t *req_pubkey_sig, uint8_t *enc_pubkey)
 {                                                                      
 	BIGNUM *bn = BN_new();                                             
 	if (bn == NULL) {                                                  
@@ -162,11 +162,17 @@ void rsa_key_gen(unsigned char pubkey_hash[], uint8_t* req_pubkey, uint8_t *req_
 
 
 	int keylen = BIO_pending(bio);
+
 	char *pem_key = (char*)calloc(keylen+1, 1); /* Null-terminate */
+
+	//========= write pem key==============
 	BIO_read(bio, pem_key, keylen);
 
+	strncpy((char*)enc_pubkey, (const char*) pem_key, keylen);
 	ocall_print_pubkey(pem_key);
 	printf("[tmac] sha256 public key length %d\n", keylen);
+
+
 	sgx_status_t status = sgx_sha256_msg((const uint8_t *)pem_key, keylen,
 			(sgx_sha256_hash_t *)pubkey_hash);
 	if(status != SGX_SUCCESS)
@@ -176,6 +182,7 @@ void rsa_key_gen(unsigned char pubkey_hash[], uint8_t* req_pubkey, uint8_t *req_
 	uint8_t req_pubkey_hash[32];
 	status = sgx_sha256_msg((const uint8_t *)req_pubkey, 775,
 			(sgx_sha256_hash_t *)req_pubkey_hash);
+	//SHA256(req_pubkey, 775, req_pubkey_hash);
 
 	if(status != SGX_SUCCESS)
 		printf("[tmac] sgx_sha256_msg failed, status: %d\n", status);
@@ -186,25 +193,26 @@ void rsa_key_gen(unsigned char pubkey_hash[], uint8_t* req_pubkey, uint8_t *req_
 	}
 	printf("\n");
 
-	uint8_t req_pubkey_sig1[512];
 	
 	int cipper_len = -1;
 	cipper_len = RSA_private_encrypt(32, req_pubkey_hash, req_pubkey_sig, keypair, RSA_PKCS1_PADDING);
+
+
 	if(cipper_len < 0){
 		printf("signature req_pubkey failed\n");
 	}else{
 		printf("signature succeed: %d \n", cipper_len);
 		
-		uint8_t plaintext[512];
-		int plantex_len = RSA_public_decrypt(cipper_len, req_pubkey_sig, plaintext, keypair, RSA_PKCS1_PADDING);
+		// uint8_t plaintext[512];
+		// int plantex_len = RSA_public_decrypt(cipper_len, req_pubkey_sig, plaintext, keypair, RSA_PKCS1_PADDING);
 
 		
-		printf("decrypt succeed: %d\n", plantex_len);
+		// printf("decrypt succeed: %d\n", plantex_len);
 
-		for(int i = 0 ; i < 32 ; ++i ){
-			printf("%x", plaintext[i]);
-		}
-		printf("\n");
+		// for(int i = 0 ; i < 32 ; ++i ){
+		// 	printf("%x", plaintext[i]);
+		// }
+		// printf("\n");
 	}
 
 	
