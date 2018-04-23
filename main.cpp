@@ -1,11 +1,11 @@
 #include <stdio.h>
-#include "sgx_urts.h"
 #include "isv_app.h"
 #include "string.h"
+#include <stdint.h>
 
 int main(int argc, char* argv[])
 {
-	sgx_enclave_id_t enclave_id ;
+	uint64_t enclave_id ;
 
 	create_resp_t create_resp = create_enclave();
 	enclave_id = create_resp.enclave_id;
@@ -17,7 +17,6 @@ int main(int argc, char* argv[])
 	memset(test_req_pubkey, 1, 775);
 
 	report_t report = get_report(enclave_id, test_spid, test_req_pubkey);
-	sgx_destroy_enclave(enclave_id);
 	printf("\nEnter a character before exit ...\n");
 	getchar();
 	return 0;

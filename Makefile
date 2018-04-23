@@ -89,8 +89,8 @@ else
 	Urts_Library_Name := sgx_urts
 endif
 
-App_Cpp_Files := isv_app/main.cpp isv_app/isv_app.cpp
-App_Include_Paths := -I$(SGX_SDK)/include
+App_Cpp_Files :=  isv_app/isv_app.cpp
+App_Include_Paths := -I$(SGX_SDK)/include -I./include
 
 App_C_Flags := $(SGX_COMMON_CFLAGS) -fPIC -Wno-attributes $(App_Include_Paths)
 
@@ -267,7 +267,7 @@ $(Signed_Enclave_Name): $(Enclave_Name)
 
 main:
 $(Main_Name): main.cpp
-	@$(CXX) $^ -o $@  -L. -lapp $(App_Link_Flags)
+	@$(CXX) $^ -o $@ -I ./include -L. -lapp $(App_Link_Flags)
 
 clean:
-	@rm -f .config_* $(App_Name) $(App_Name) $(Enclave_Name) $(Signed_Enclave_Name) $(App_Cpp_Objects) isv_app/isv_enclave_u.* $(Enclave_Cpp_Objects) isv_enclave/isv_enclave_t.* libservice_provider.*
+	@rm -f $(Main_Name) .config_* $(App_Name) $(App_Name) $(Enclave_Name) $(Signed_Enclave_Name) $(App_Cpp_Objects) isv_app/isv_enclave_u.* $(Enclave_Cpp_Objects) isv_enclave/isv_enclave_t.* libservice_provider.*
