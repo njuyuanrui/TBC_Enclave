@@ -96,7 +96,7 @@ report_t get_report(uint64_t enclave_id, uint8_t* spid, uint8_t* req_pubkey){
 		return report;
 	}
 
-	report->quote_size = p_quote_size;
+	report.quote_size = p_quote_size;
 
 	sgx_report_t sgx_report;
 
@@ -138,7 +138,7 @@ report_t get_report(uint64_t enclave_id, uint8_t* spid, uint8_t* req_pubkey){
 
 	FILE *fp1;
 	fp1 = fopen("./provider/data/sig", "w+b");
-	fwrite((void*)report->req_pubkey_sig, 512, 1, fp1);
+	fwrite((void*)report.req_pubkey_sig, 512, 1, fp1);
 	fclose(fp1);
 	//============================================
 	report.ret = GET_REPORT_SUCCESS;
