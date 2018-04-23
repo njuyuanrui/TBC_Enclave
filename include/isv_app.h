@@ -31,5 +31,17 @@ create_resp_t create_enclave();
 
 report_t get_report( uint64_t enclave_id, uint8_t* spid, uint8_t* req_pubkey);
 
+
+/**
+ * destroy_enclave 销毁enclave 
+ * 
+ * 参数：
+ * enclave_id : EnclaveID
+ * 
+ * 返回值： 无
+ * 
+ */
+void create_enclave(uint64_t enclave_id);
+
 #endif
 

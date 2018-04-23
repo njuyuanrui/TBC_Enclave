@@ -145,3 +145,10 @@ report_t get_report(uint64_t enclave_id, uint8_t* spid, uint8_t* req_pubkey){
 	return report;
 
 }
+
+
+void destroy_enclave(uint64_t enclave_id){
+	
+	sgx_destroy_enclave((sgx_enclave_id_t) enclave_id);
+	
+}
