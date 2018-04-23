@@ -8,10 +8,11 @@
 /**
  * create_enclave： 创建enclave 
  * 
- * 参数：
- * enclave_id: 用于获取enclaveID
+ * 参数：无
  * 
- * 返回值： 0表示创建成功
+ * 返回值：
+ * create_resp_t: 返回运行状态和enclaveID
+ * 
  */
 create_resp_t create_enclave();
 
@@ -23,9 +24,9 @@ create_resp_t create_enclave();
  * enclave_id： 指定的enclave的ID
  * spid: 验证方指定的chanllege
  * req_pubkey： 需求方的公钥
- * report: 获取返回的report
  * 
- * 返回值： 0表示成功
+ * 返回值： 
+ * report: 返回运行状态和report
  */
 
 report_t get_report( uint64_t enclave_id, uint8_t* spid, uint8_t* req_pubkey);

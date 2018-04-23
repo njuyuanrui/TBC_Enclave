@@ -118,7 +118,9 @@ endif
 
 App_Cpp_Objects := $(App_Cpp_Files:.cpp=.o)
 
-App_Name := app
+App_Name := libapp.so
+
+Main_Name := main
 
 ######## Enclave Settings ########
 
@@ -236,7 +238,7 @@ isv_app/%.o: isv_app/%.cpp
 	@echo "CXX  <=  $<"
 
 $(App_Name): isv_app/isv_enclave_u.o $(App_Cpp_Objects) $(SGX_SSL_U)
-	@$(CXX) $^ -o $@ $(App_Link_Flags)
+	@$(CXX) $^ -shared -o $@ $(App_Link_Flags)
 	@echo "LINK =>  $@"
 
 ######## Enclave Objects ########
@@ -262,6 +264,10 @@ $(Signed_Enclave_Name): $(Enclave_Name)
 	@echo "SIGN =>  $@"
 
 .PHONY: clean
+
+main:
+$(Main_Name): main.cpp
+	@$(CXX) $^ -o $@  -L. -lapp $(App_Link_Flags)
 
 clean:
 	@rm -f .config_* $(App_Name) $(App_Name) $(Enclave_Name) $(Signed_Enclave_Name) $(App_Cpp_Objects) isv_app/isv_enclave_u.* $(Enclave_Cpp_Objects) isv_enclave/isv_enclave_t.* libservice_provider.*
