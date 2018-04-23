@@ -62,6 +62,7 @@ create_resp_t create_enclave()
 	fprintf(OUTPUT, "\nCall sgx_create_enclave success.\n");
 	
 	resp.enclave_id = (uint64_t)sgx_enclave_id;
+	resp.ret = CREATE_ENCLAVE_SUCCESS;
 
 	return resp;
 }

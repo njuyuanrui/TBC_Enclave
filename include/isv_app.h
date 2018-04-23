@@ -41,7 +41,7 @@ report_t get_report( uint64_t enclave_id, uint8_t* spid, uint8_t* req_pubkey);
  * 返回值： 无
  * 
  */
-void create_enclave(uint64_t enclave_id);
+void destroy_enclave(uint64_t enclave_id);
 
 #endif
 
