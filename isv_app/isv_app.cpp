@@ -30,39 +30,16 @@ void ocall_print_pubkey(const char* pubkey)
 	fclose(fp);
 }
 
-//debug
-#if 0
-void tmac_print_quote(sgx_quote_t *quote)
-{
-	printf("version: %d\n", quote->version);
-	printf("sign type: %d\n", quote->sign_type);
-	printf("epid_group_id: %x %x %x %x\n", quote->epid_group_id[0], 
-			 quote->epid_group_id[1],  quote->epid_group_id[2],  quote->epid_group_id[3]);
-
-	for(int i = 0; i < 4; ++i)
-		printf("report_data[%d]: %c, ", i, quote->report_body.report_data.d[i]);
-	printf("\n");
-	printf("signature length: %d\n", quote->signature_len);
-	for(int i = 0; i < 4; ++i)
-		printf("signature[%d]: %x, ", i, quote->signature[i]);
-	printf("\n");
-
-	for(int i = 0; i < 32; ++i)
-		printf("enclave_hash[%d]: 0x%x\n", i, quote->report_body.mr_enclave.m[i]);
-}
-#endif
 
 #define _T(x) x
-sgx_enclave_id_t create_enclave()
+create_resp_t create_enclave()
 {
-	sgx_status_t ret;                                                         
-	sgx_status_t status = SGX_SUCCESS;
-	sgx_enclave_id_t enclave_id = 0;
-	//int enclave_lost_retry_time = 1;
-	FILE* OUTPUT = stdout;
+	create_resp_t resp;
 
-	//uint32_t extended_epid_group_id = 0;
-	//ret = sgx_get_extended_epid_group_id(&extended_epid_group_id);
+	sgx_status_t ret;                                                         
+	sgx_enclave_id_t sgx_enclave_id = 0;
+
+	FILE* OUTPUT = stdout;
 
 	// creates the worker enclave
 	int launch_token_update = 0;
@@ -73,66 +50,27 @@ sgx_enclave_id_t create_enclave()
 			SGX_DEBUG_FLAG,
 			&launch_token,
 			&launch_token_update,
-			&enclave_id, NULL);
+			&sgx_enclave_id, NULL);
 	if(SGX_SUCCESS != ret)
 	{
 		fprintf(OUTPUT, "\nError, call sgx_create_enclave fail [%s].",
 				__FUNCTION__);
-		sgx_destroy_enclave(enclave_id);
-		exit(-1);
+		sgx_destroy_enclave(sgx_enclave_id);
+		resp.ret = CREATE_ENCLAVE_FAILURE;
+		return resp;
 	}
 	fprintf(OUTPUT, "\nCall sgx_create_enclave success.\n");
 	
-	return enclave_id;
+	resp.enclave_id = (uint64_t)sgx_enclave_id;
+
+	return resp;
 }
 
-// void attest_enclave(sgx_enclave_id_t enclave_id)
-// {
-// 	sgx_status_t ret;                                                         
-// 	sgx_status_t status = SGX_SUCCESS;
-	
-// 	// retrieve the attestation report
-// 	sgx_target_info_t p_target_info;                                          
-// 	sgx_epid_group_id_t p_gid;                                                
-
-// 	ret = sgx_init_quote(&p_target_info, &p_gid);                             
-// 	printf("[tmac] sgx_init_quote return %d, SGX_SUCCESS is %d\n", ret, SGX_SUCCESS);
-
-// 	uint32_t p_quote_size;
-// 	//ret = sgx_get_quote_size(NULL, &p_quote_size);
-// 	ret = sgx_calc_quote_size(NULL, 0, &p_quote_size);
-// 	printf("[tmac] sgx_calc_quote_size return %d, size %d\n", ret, p_quote_size);
-
-// 	sgx_report_t report;
-// 	ret = tmac_get_report(enclave_id, &status, &p_target_info, &report);
-// 	printf("[tmac] tmac_get_report return ret %d, status %d\n", ret, status);
-
-// 	//TODO read SPID
-// 	// get the spid from the blockchain (as part of challenge)
-// 	sgx_spid_t spid; //5E 6C CE E0 7A DF 9C 31 AD 61 31 E0 CF A8 B5 2D
-// 	sgx_quote_t *quote = (sgx_quote_t*)malloc(p_quote_size);
-
-// 	uint8_t tmac_spid[] = { 0x5E, 0x6C, 0xCE, 0xE0, 0x7A, 0xDF, 0x9C, 0x31,
-// 		0xAD, 0x61, 0x31, 0xE0, 0xCF, 0xA8, 0xB5, 0x2D};
-// 	for(int i = 0; i < 16; ++i)
-// 		spid.id[i] = tmac_spid[i];
-// 	ret = sgx_get_quote(&report, SGX_UNLINKABLE_SIGNATURE, &spid, NULL, NULL, 
-// 			0, NULL, quote, p_quote_size);
-// 	printf("[tmac] sgx_get_quote return %d\n", ret);
-
-// 	if(ret == 0)
-// 		printf("[tmac] Success: get quote and pubkey of enclave"
-// 				" [execute \'ls ./provider/data/\']\n");
-
-// 	FILE *fp;
-// 	fp = fopen("./provider/data/quote.bin", "w+b");
-// 	fwrite((void*)quote, p_quote_size, 1, fp);
-// 	fclose(fp);
-// }
 
 
+report_t get_report(uint64_t enclave_id, uint8_t* spid, uint8_t* req_pubkey){
 
-uint8_t get_report(uint64_t enclave_id, uint8_t* spid, uint8_t* req_pubkey, report_t* report){
+	report_t report;
 
 	sgx_status_t ret;                                                         
 	sgx_status_t status = SGX_SUCCESS;
@@ -143,20 +81,34 @@ uint8_t get_report(uint64_t enclave_id, uint8_t* spid, uint8_t* req_pubkey, repo
 
 	ret = sgx_init_quote(&p_target_info, &p_gid);                             
 	
-	//TODO: add error number
-	if(ret != 0) return ret;
+	if(SGX_SUCCESS != ret) {
+		printf("init quote fail! ret: %d \n", ret);
+		report.ret = INIT_QUOTE_FAILURE;
+		return report;
+	}
 
 	uint32_t p_quote_size;
 	ret = sgx_calc_quote_size(NULL, 0, &p_quote_size);
 
-	if(ret != 0) return ret;
+	if(SGX_SUCCESS != ret) {
+		printf("calculate quote size fail! ret: %d \n" , ret);
+		report.ret = CAlC_QUOTE_SIZE_FAILURE;
+		return report;
+	}
 
 	report->quote_size = p_quote_size;
 
 	sgx_report_t sgx_report;
 
 
-	ret = tmac_get_report((sgx_enclave_id_t)enclave_id, &status, &p_target_info, req_pubkey, &sgx_report, report->req_pubkey_sig, report->pubkey);
+	ret = tmac_get_report((sgx_enclave_id_t)enclave_id, &status, &p_target_info, req_pubkey, &sgx_report, report.req_pubkey_sig, report.pubkey);
+
+	if(SGX_SUCCESS != ret){
+		printf("get report fail! ret: %d \n" , ret);
+		report.ret = GET_REPORT_FAILURE;
+		return report;
+	}
+
 
 	//==================================get quote============================================
 	sgx_spid_t sgx_spid; 
@@ -170,26 +122,26 @@ uint8_t get_report(uint64_t enclave_id, uint8_t* spid, uint8_t* req_pubkey, repo
 			0, NULL, quote, p_quote_size);
 	
 
-	if(ret == 0){
-		strncpy((char*)report->quote, (const char*)quote, p_quote_size);
-
-		FILE *fp;
-		fp = fopen("./provider/data/quote.bin", "w+b");
-		fwrite((void*)quote, p_quote_size, 1, fp);
-		fclose(fp);
-
-		FILE *fp1;
-		fp1 = fopen("./provider/data/sig", "w+b");
-		fwrite((void*)report->req_pubkey_sig, 512, 1, fp1);
-		fclose(fp1);
-
-		return 0;
+	if(SGX_SUCCESS != ret){
+		printf("get quote fail! ret: %d \n" , ret);
+		report.ret = GET_QUOTE_FAILURE;
+		return report;
 	}
-		
-	return 1;
-	
 
-	
+	strncpy((char*)report.quote, (const char*)quote, p_quote_size);
 
+	//==============for test=====================
+	FILE *fp;
+	fp = fopen("./provider/data/quote.bin", "w+b");
+	fwrite((void*)quote, p_quote_size, 1, fp);
+	fclose(fp);
+
+	FILE *fp1;
+	fp1 = fopen("./provider/data/sig", "w+b");
+	fwrite((void*)report->req_pubkey_sig, 512, 1, fp1);
+	fclose(fp1);
+	//============================================
+	report.ret = GET_REPORT_SUCCESS;
+	return report;
 
 }
