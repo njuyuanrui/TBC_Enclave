@@ -59,15 +59,23 @@ bool verifyEnclave(unsigned char quote[])
 	return true;
 }
 
-bool verifyPubkey(unsigned char quote[])
+bool verifyPubkey(unsigned char quote[], unsigned char pubkey[])
 {
-	bool pass_check = check_pubkey(quote, "./data/pubkey.pem");
-	if(pass_check == false)
+	//bool pass_check = check_pubkey(quote, pubkey);
+
+	int PUBKEY_HASH_OFFSET = 48 + 320 + 32;
+	int PUBKEY_HASH_SIZE = 32;
+	
+	unsigned char pubkey_hash[32];
+
+	SHA256(pubkey, 775, pubkey_hash);
+
+	for(int i = 0; i < PUBKEY_HASH_SIZE; ++i)
 	{
-		cout << "[Warning]: The public key has been changed." << endl;
-		exit(-1);
+		if(pubkey_hash[i] != quote[PUBKEY_HASH_OFFSET+i]) return false;
 	}
 	return true;
+
 }
 
 
@@ -95,29 +103,9 @@ RSA* createRSA(unsigned char *key, int isPublic)
 }
 
 
-bool verifyReqPubkey()
+bool verifyReqPubkey(uint8_t* pubkey,  uint8_t* req_pubkey, uint8_t* req_pubkey_sig)
 {
 
-	unsigned char req_pubkey[775] = {1};
-	memset(req_pubkey, 1, 775);
-	unsigned char sig[512];
-	unsigned char pubkey[775];
-	FILE *fp;
-	fp = fopen("./data/sig", "rb");
-	if(fp)
-	{
-		int cnt = fread(sig, 1, 512, fp);
-	}
-	fclose(fp);
-
-	FILE *fp1;
-	fp1 = fopen("./data/pubkey.pem", "rb");
-	if(fp1)
-	{
-		int cnt = fread(pubkey, 1, 775, fp);
-	}
-	fclose(fp1);
-	
 	RSA *rsa = createRSA(pubkey,1);
 	
 	unsigned char req_pubkey_hash[32];
@@ -127,16 +115,9 @@ bool verifyReqPubkey()
 	SHA256(req_pubkey, 775, req_pubkey_hash);
 
 	for(int i = 0 ; i < 32 ; ++i ){
-		printf("%x", req_pubkey_hash[i]);
+		if(plaintext[i] != req_pubkey_hash[i]) return false;
 	}
-	printf("\n");
-
-	for(int i = 0 ; i < 32 ; ++i ){
-		printf("%x", plaintext[i]);
-	}
-	printf("\n");	
-
-	return 0;
+	return true;
 	
 }
 
