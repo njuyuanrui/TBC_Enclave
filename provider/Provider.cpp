@@ -65,7 +65,7 @@ int verify(uint8_t* quote, string enclave_signed_so, uint8_t* pubkey,  uint8_t* 
 		return VERIFY_QUOTE_FAIL;
 	}
 
-	if(!verifyEnclave(quote)){
+	if(!verifyEnclave(quote,enclave_signed_so)){
 		return VERIFY_ENCLAVE_FAIL;
 	} 	
 

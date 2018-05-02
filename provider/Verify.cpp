@@ -41,10 +41,10 @@ bool verifyQuote(unsigned char quote[])
 	return true;
 }
 
-bool verifyEnclave(unsigned char quote[])
+bool verifyEnclave(unsigned char quote[], string enclave_signed_so)
 {
 	uint8_t hash[32];
-	get_enclave_measurement(Settings::enclave_signed_so, hash);
+	get_enclave_measurement(enclave_signed_so, hash);
 	bool pass_check = false;
 	pass_check = check_measurement(quote, hash);
 	if(pass_check == false)
