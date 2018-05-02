@@ -37,7 +37,7 @@ SGX_ARCH ?= x64
 SGX_DEBUG ?= 1
 
 ### DEBUG SGX SSL Settings ###
-OPENSSL_LIB_PATH := /home/yuanrui/Workspace/linux-sgx/external/sgxssl/Linux/package/lib64/debug/
+OPENSSL_LIB_PATH := /root/sgx/linux-sgx/external/sgxssl/Linux/package/lib64/debug/
 SGX_SSL_EDL_PATH := $(OPENSSL_LIB_PATH)/../../include
 SGXSSL_Lib := sgx_tsgxssl
 SGXSSL_Crypto_Lib := sgx_tsgxssl_crypto
