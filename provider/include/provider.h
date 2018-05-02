@@ -4,6 +4,8 @@
 #include <string>
 #include <stdint.h>
 
+using std::string;
+
 #define VERIFY_QUOTE_FAIL                  1
 #define VERIFY_ENCLAVE_FAIL                2
 #define VERIFY_PUBKEY_FAIL                 3

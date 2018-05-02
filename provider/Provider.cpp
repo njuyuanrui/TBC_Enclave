@@ -6,6 +6,7 @@
 
 #include "Verify.h"
 #include "provider.h"
+#include "string.h"
 
 int main()
 {
@@ -24,7 +25,7 @@ int main()
 	if(fp1)
 	{
 		int cnt = fread(quote, 1, 1200, fp1);
-		fclose(fp);
+		fclose(fp1);
 	}else{
 		exit(1);
 	}
@@ -34,7 +35,7 @@ int main()
 	if(fp2)
 	{
 		int cnt = fread(pubkey, 1, 1200, fp2);
-		fclose(fp);
+		fclose(fp1);
 	}else{
 		exit(1);
 	}
@@ -44,7 +45,7 @@ int main()
 	if(fp3)
 	{
 		int cnt = fread(sig, 1, 512, fp3);
-		fclose(fp);
+		fclose(fp1);
 	}else{
 		exit(1);
 	}
@@ -57,7 +58,7 @@ int main()
 	return 0;	
 }
 
-int verify(uint8_t* quote[], string enclave_signed_so, uint8_t* pubkey,  uint8_t* req_pubkey, uint8_t* req_pubkey_sig){
+int verify(uint8_t* quote, string enclave_signed_so, uint8_t* pubkey,  uint8_t* req_pubkey, uint8_t* req_pubkey_sig){
 	
 
 	if(!verifyQuote(quote)) {
@@ -73,7 +74,7 @@ int verify(uint8_t* quote[], string enclave_signed_so, uint8_t* pubkey,  uint8_t
 	} 	
 
 	if(!verifyReqPubkey(pubkey, req_pubkey, req_pubkey_sig)){
-		return VERIFY_REQ_PUBKEY_FAILret;
+		return VERIFY_REQ_PUBKEY_FAIL;
 	} 
 
 	return 0;

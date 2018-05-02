@@ -110,7 +110,7 @@ bool verifyReqPubkey(uint8_t* pubkey,  uint8_t* req_pubkey, uint8_t* req_pubkey_
 	
 	unsigned char req_pubkey_hash[32];
 	unsigned char plaintext[32];
-    RSA_public_decrypt(512,sig,plaintext,rsa,RSA_PKCS1_PADDING);
+    RSA_public_decrypt(512,req_pubkey_sig,plaintext,rsa,RSA_PKCS1_PADDING);
 
 	SHA256(req_pubkey, 775, req_pubkey_hash);
 
