@@ -72,11 +72,9 @@ int verify(uint8_t* quote, string enclave_signed_so, uint8_t* pubkey,  uint8_t* 
 	if(!verifyPubkey(quote, pubkey)){
 		return VERIFY_PUBKEY_FAIL;
 	} 	
-
 	if(!verifyReqPubkey(pubkey, req_pubkey, req_pubkey_sig)){
 		return VERIFY_REQ_PUBKEY_FAIL;
 	} 
-
 	return 0;
 
 }

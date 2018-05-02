@@ -1,10 +1,13 @@
 #ifndef VERIFY_H_
 #define VERIFY_H_
 #include <stdint.h>
+#include <string>
+
+using namespace std;
 
 bool verifyQuote(unsigned char quote[]);
 
-bool verifyEnclave(unsigned char quote[],enclave_signed_so);
+bool verifyEnclave(unsigned char quote[],string enclave_signed_so);
 
 bool verifyPubkey(unsigned char quote[],unsigned char pubkey[]);
 
